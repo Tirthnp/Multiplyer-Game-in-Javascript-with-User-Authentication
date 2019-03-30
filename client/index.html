@@ -1,0 +1,63 @@
+ <canvas id='ctx' width='500' height="500" style="border:1px solid black; size:100%;"></canvas>
+
+ <script src="http://cdn.socket.io/socket.io-1.4.5.js"></script>
+ <script>
+     var ctx = document.getElementById("ctx").getContext('2d');
+     ctx.font = '30px Arial';
+
+     var socket=io();
+     socket.on('newposition',function (params) {
+        ctx.clearRect(0,0,2000,1000);
+        
+        for(var i=0; i<params.player.length; i++)
+        {
+            ctx.fillText(params.player[i].number,params.player[i].x,params.player[i].y);
+            
+        } 
+        for(var i=0; i<params.bullet.length; i++)
+        {
+            ctx.fillRect(params.bullet[i].x-5,params.bullet[i].y-5,10,10);
+            
+        }
+
+     });
+     document.onkeydown = function(event){
+        if(event.keyCode == 87) //W
+            socket.emit('keyPressed',{input:'up', press:true})
+        if(event.keyCode == 65) //A
+            socket.emit('keyPressed',{input:'left', press:true})
+        if(event.keyCode == 83) //S
+            socket.emit('keyPressed',{input:'down', press:true})
+        if(event.keyCode == 68) //D
+            socket.emit('keyPressed',{input:'right', press:true})
+     };
+     document.onkeyup = function(event){
+        if(event.keyCode == 87) //W
+            socket.emit('keyPressed',{input:'up', press:false})
+        if(event.keyCode == 65) //A
+            socket.emit('keyPressed',{input:'left', press:false})
+        if(event.keyCode == 83) //S
+            socket.emit('keyPressed',{input:'down', press:false})
+        if(event.keyCode == 68) //D
+            socket.emit('keyPressed',{input:'right', press:false})
+     };
+     
+        document.onmousedown = function(event){
+        socket.emit('keyPressed',{input:'attack',press:true});
+        };
+        
+        document.onmouseup = function(event){
+        socket.emit('keyPressed',{input:'attack',press:false});
+        };
+      
+    
+
+    
+    document.onmousemove = function(event){
+        var x =-250 + event.clientX - 8;
+        var y = -250 +event.clientY -8;
+        var angle = Math.atan2(y,x)/Math.PI *180;
+        socket.emit('keyPressed',{input:'mouseAngle',press:angle});
+        
+    };
+ </script>
