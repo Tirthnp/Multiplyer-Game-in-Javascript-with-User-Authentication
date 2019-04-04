@@ -1,0 +1,78 @@
+<button id="signoutBtn" class="btn btn-danger">Sign Out</button>
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+       <h4 class="display-4">Profile of <span class="badge badge-secondary">{{user}}</span></h1>
+       <table class="table" >
+      <thead>
+        <tr>
+           <th scope="col">Username</th>
+            <th scope="col">High Score</th>
+            <th>Change password</th>
+    </tr>
+  </thead>
+  <tbody id="userlist">
+    <tr>
+        <td>{{user}}</td>
+        <td>highscore</td>
+        <td><input type="password" class="form-control"  placeholder="Change password" required="required"
+                id="pass"></td>
+    </tr>
+  </tbody>
+</table>
+    
+    </div>
+    <div align="center"><button id="changeBtn" class="btn btn-danger">Change</button></div>
+    </div>
+    
+<script>    
+    const signout = document.getElementById("signoutBtn");
+     signout.addEventListener("click",(evt)=>{
+         let request = new XMLHttpRequest();
+         request.open("POST","/signout");
+         request.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+          request.responseType = "json";
+          request.onload= function(evt){
+                if (request.status==200){
+                    let res= request.response;
+                      console.log(res);
+                    window.location = res.location               
+
+                }
+                else{
+                    console.log("err",request);
+                }
+                };
+          let obj={
+            text:'SignOut'
+          };
+          request.send(JSON.stringify(obj));
+      });
+        const changeBtn = document.getElementById("changeBtn");
+        changeBtn.addEventListener("click",(evt)=>{
+            const pas = document.getElementById("pass");
+            const pasV = pas.value;
+
+            console.log(pasV);
+            let request = new XMLHttpRequest();
+            request.open("POST","/editUser");
+            request.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+            request.responseType = "json";
+            request.onload= function(evt){
+                if (request.status==200){
+                    let res= request.response;
+                    console.log(res);
+                    window.alert(res.text);
+                    window.location= "/userpage"
+                }
+                else{
+                    console.log("err",request);
+                }
+                };
+        
+            let obj={
+             password:pasV,
+          };
+          request.send(JSON.stringify(obj));
+        });
+     
+</script>
