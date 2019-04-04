@@ -17,7 +17,7 @@ const serv= require('http').Server(app);
 
 
 app.engine('hbs',hbs.express4({
-    partialsDir: __dirname + '/views/partials',
+    
     defaultLayout: __dirname+'/views/layout/main.hbs'
 
 }));
@@ -29,7 +29,9 @@ const allowedPages=[
     "/home",
     "/admin",
     "/adminpage",
-    "/deleteUser"
+    "/deleteUser",
+    "/editUser",
+    "/userpage"
 ];
 
 //function to check the authentication
@@ -42,18 +44,17 @@ function checkAuth(req,res,next){
         }
         res.send(JSON.stringify(msg));
     
-    }
-    
-    else   if (req.url ==="/getscore"){
-        let stuff = req.body;
-        db.get(`SELECT * FROM highscore WHERE username = ?`,[stuff.user],function (err,row){
-            if(!err){
-                res.send(JSON.stringify(row))
-            }
+    }   
+    // else   if (req.url ==="/getscore"){
+    //     let stuff = req.body;
+    //     db.get(`SELECT * FROM highscore WHERE username = ?`,[stuff.user],function (err,row){
+    //         if(!err){
+    //             res.send(JSON.stringify(row))
+    //         }
 
-        });
+    //     });
 
-    }
+    // }
     else if (req.url === "/getallusers"){
 
             db.all(`SELECT * FROM users`,[],function (err,row){
@@ -73,6 +74,12 @@ function checkAuth(req,res,next){
             }
             res.send(JSON.stringify(msg));
        
+    }
+    else if (req.url==="/reqeditUser"){
+        let msg={
+            location:"/userpage"
+        }
+        res.send(JSON.stringify(msg));
     }
     else if (req.url === "/adminsignout"){
         
@@ -108,7 +115,7 @@ app.set('view engine','hbs');
 app.set('views',__dirname+'/views');
 
 
-
+//
 // data bases
 const db = new sqlite3.Database(__dirname+"database.db",function(err){
     if(!err){
@@ -132,7 +139,6 @@ const db = new sqlite3.Database(__dirname+"database.db",function(err){
 //function to create users
 function newUser(res,stuff){
     let flag =false;
-    db.serialize(()=>{  
     db.get(`INSERT INTO users(username,password) VALUES(?,?)`,[stuff.user,stuff.pass],function(err){
         if(err){
             let msg={
@@ -149,8 +155,7 @@ function newUser(res,stuff){
             res.send(JSON.stringify(msg));
         }
     
-    }).get(`INSERT INTO highscore(username,highscore) VALUES(?,?)`,[stuff.user,0],function(err){} );
-});
+    });
     
     
  }
@@ -388,7 +393,11 @@ app.get("/adminpage",jsonParser,function(req,res){
                     title:"Admin Page",
                    
                     });
-         
+             
+                
+      
+      
+                  
     }
     else{
         res.render("notallowed",{
@@ -407,6 +416,36 @@ app.post("/deleteUser",jsonParser,function(req,res){
                 res.send(JSON.stringify(msg)); } }
         );
     
+});
+////directing the request to the user page
+app.get("/userpage",jsonParser,function(req,res){
+    if (req.session.auth){
+        res.render("user",{
+            title:"User Page",
+            user: req.session.user
+        });
+    }
+    else{
+        res.render("notallowed",{
+            title:"Error"
+        });
+    }
+});
+app.post("/editUser",jsonParser,function(req,res){
+    let stuff = req.body;
+    console.log("upadte pass"+stuff.password);
+    db.run(`UPDATE users SET password=? WHERE username=?`,[stuff.password,req.session.user],function(err){
+        if(!err){
+            let msg = {
+                text:"Password Updated"
+            }
+            res.send(JSON.stringify(msg));
+        }
+        else{
+            console.log("error")
+        }
+    });
+
 });
 
 
@@ -506,16 +545,7 @@ Player.list={};
 Player.connect=function(socket){
     var player=Player(socket.id);
     socket.on('username',function(name){
-    player.username=name.user;
-    db.get(`SELECT highscore FROM highscore WHERE username=?`,[player.username],function(err,row){
-        console.log(row);
-        player.highscore=row.highscore;
-    });
-    
-   // db.run('INSERT INTO highscore(username,highscore) VALUES(?,?)',[player.username,player.highscore],
-     //   function( err) { if (!err) {  } }
-            
-   // );
+        player.username=name.user;
         
     });
     console.log('player'+player.username);
@@ -561,18 +591,8 @@ Player.update= function(){
             player.respawn=false;
             player.posx=200;
             player.posy=200;
-            
             if(player.score>player.highscore)
-            {   
                 player.highscore=player.score;
-                db.run('UPDATE highscore SET highscore=? WHERE username=?',[player.highscore,player.username],
-            function( err) {});
-                //db.get("SELECT highscore FROM highscore WHERE username=?",[player.username],function(error,row){
-                 //   d
-               // });
-
-            }
-                
             player.score=0;
             player.radius=11;
         }
@@ -582,7 +602,7 @@ Player.update= function(){
             radius:player.radius,
             color:player.color
         });
-        //console.log("Player name = "+player.username+" has high score of :"+player.highscore);
+        console.log("Player name = "+player.username+" has high score of :"+player.highscore);
     }
     return playerPack;
 }
