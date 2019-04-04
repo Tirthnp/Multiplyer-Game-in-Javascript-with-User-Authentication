@@ -1,0 +1,90 @@
+
+<button id="signoutBtn" class="btn btn-danger">Sign Out</button>
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+       <h1 class="display-4">Welcome to Admin Page</h1>
+    </div></div>
+<h3>List of Players</h3>
+<table class="table" >
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Username</th>
+      <th scope="col">High Score</th>
+      <th scope="col">Action</th>
+    </tr>
+  </thead>
+  <tbody id="userlist">
+    
+  </tbody>
+</table>
+
+<script>
+    const signout = document.getElementById("signoutBtn");
+     signout.addEventListener("click",(evt)=>{
+         let request = new XMLHttpRequest();
+         request.open("POST","/adminsignout");
+         request.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+          request.responseType = "json";
+          request.onload= function(evt){
+                if (request.status==200){
+                    let res= request.response;
+                      console.log(res);
+                    window.location = res.location               
+
+                }
+                else{
+                    console.log("err",request);
+                }
+                };
+          let obj={
+            text:'SignOut'
+          };
+          request.send(JSON.stringify(obj));
+      });
+     
+     // function for loading all the user from the data base
+     function getuser(){ //this post a json req to retrive all the users from the database
+        let request = new XMLHttpRequest();
+        request.open("post","/getallusers");
+         request.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+          request.responseType = "json";
+          request.onload= function(evt){
+                if (request.status==200){
+                    let res= request.response;
+                    console.log(res);
+                    let c =1;
+                    const tabuser = document.getElementById("userlist")
+                    for (x of res){
+                        const tr = document.createElement("tr");
+                        const td1 =document.createElement("th");
+                        const td2 =document.createElement("td");
+                        const td3 =document.createElement("td");
+                        const td4 =document.createElement("td");
+                        td1.innerText = c;
+                        td2.innerText = x.username;
+                        td3.innerText = "highScore will be here"
+                        td4.innerText="deleteButn"
+                        c++;
+                        tr.appendChild(td1);
+                        tr.appendChild(td2);
+                        tr.appendChild(td3);
+                        tr.appendChild(td4);
+                        tabuser.appendChild(tr);
+                    }
+                    
+                }
+                else{
+                    console.log("err",request);
+                }
+                };
+          let obj={
+            text:'SignOut'
+          };
+          request.send(JSON.stringify(obj));
+         
+      }
+      let user = getuser();
+      // deleteing function here
+      
+</script>

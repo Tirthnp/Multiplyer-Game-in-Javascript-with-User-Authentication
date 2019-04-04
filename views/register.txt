@@ -1,0 +1,51 @@
+
+    <div id="form-signin">
+    <form action="">
+        <table>
+            <tr>
+                <td><b>Username:</b></td><td><input type="text" id="Uname" required class="form-label-group"></td>
+            </tr>
+            <tr><td><b>Password:</b></td><td><input type="password" id="Pass" class="form-label-group"></td></tr>
+            <tr><td><b>Confirm Password:</b></td><td><input type="password" id="Conpass" class="form-label-group"></td></tr>
+            <tr><td></td> <td><button id="regisBtn"class="btn btn-dark">Register</button></td></tr>
+            <tr> <td></td> <td> <Button class="btn btn-dark"> <a href="/" style="text-decoration: none;">Go Back</a> </Button></td> </tr>
+        </table>
+    </form>
+    </div>
+<script>
+    const usName = document.getElementById("Uname");
+    const pass = document.getElementById("Pass");
+    const cpass = document.getElementById("Conpass");
+     
+    const regisBtn = document.getElementById("regisBtn");
+    regisBtn.addEventListener("click",(evt)=>{
+        console.log("clicked");
+        if (pass.value===cpass.value){
+            let request = new XMLHttpRequest();
+            request.open("POST","/new");
+            request.setRequestHeader("Content-Type","application/json;charset=UTF-8");
+            request.responseType = "json";
+            request.onload= function(evt){
+                if (request.status==200){
+                    let res= request.response;
+                    
+
+                }
+                else{
+                    console.log("err",request);
+                }
+                };
+            let obj ={
+                user: usName.value,
+                pass:pass.value,
+            };
+            request.send(JSON.stringify(obj));
+        }
+        else{window.alert("Password doesnt match")}
+
+        
+       
+        
+    });
+
+</script>

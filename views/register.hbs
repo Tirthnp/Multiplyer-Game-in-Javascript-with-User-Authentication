@@ -1,0 +1,61 @@
+<div class="signup-form">
+    
+        <h2>Registration</h2>
+        <hr>
+        <div class="form-group">
+            <input type="text" class="form-control" name="username" placeholder="Username" required="required"
+                id="Uname">
+        </div>
+        <div class="form-group">
+            <input type="email" class="form-control" name="email" placeholder="Email Address" required="required"
+                id="Email">
+        </div>
+        <div class="form-group">
+            <input type="password" class="form-control" name="password" placeholder="Password" required="required"
+                id="Pass">
+        </div>
+        <div class="form-group">
+            <input type="password" class="form-control" name="confirm_password" placeholder="Confirm Password"
+                required="required" id="Conpass">
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="regisBtn">Sign Up</button>
+        </div>
+    
+    <div class="text-center">Already have an account? <a href="/">Login here</a></div>
+</div>
+<script>
+    const usName = document.getElementById("Uname");
+    const pass = document.getElementById("Pass");
+    const cpass = document.getElementById("Conpass");
+
+    const regisBtn = document.getElementById("regisBtn");
+    regisBtn.addEventListener("click", (evt) => {
+        console.log("clicked");
+        if (pass.value === cpass.value) {
+            let obj = {
+                user: usName.value,
+                pass: pass.value,
+            };
+
+            fetch("/new", {
+                method: "post",
+                body: JSON.stringify(obj),
+                headers: { "Content-Type": "application/json" }
+            }).then(response => {
+                return response.json();
+            }).then(json=>{
+                if (json.text){//if there is no user in the data base with the same username
+                      window.location= json.location;  
+                }
+                else {
+                    window.alert("User with username name: "+usName.value+" is there in the database." );
+                }
+                    
+             
+            });       
+        }
+        else { window.alert("Password doesnt match") }
+    });
+
+</script>

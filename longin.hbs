@@ -1,0 +1,67 @@
+
+      <div id='container'> 
+            <img src="people.svg" width="330" height="400" >
+            <table>
+            
+            <tr>
+                <label for="Uname"><td> <b>Username: </b></td>
+                <td><input type="text" id="Uname" class="form-control"></td></label>
+            </tr>
+            <tr><label for="pass"><td><b>Password:</b></td>
+              <td><input type="password" id='pass' class="form-control"></label></tr>
+              </tr>
+            <tr colspan="2"  ><td></td><td text-align="center"><Button id="loginbtn" class="btn btn-dark" >Login</Button> </td></tr>
+            <tr>
+                <td></td>
+                <td><a href="/new">New to the website</a></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><a href="/forgot">Forgot Password</a></td>
+            </tr>
+
+          </table>
+      </div>
+      
+      <script>
+        const  logBtn = document.getElementById('loginbtn');
+        const usName = document.getElementById('Uname');
+        const usPass = document.getElementById('pass');
+        
+        
+        
+
+
+        logBtn.addEventListener('click',(evt)=>{
+          console.log(usName.value);
+          let request = new XMLHttpRequest();
+          request.open('POST','/');
+          request.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+          request.responseType = "document";
+          request.onload= function(evt){
+                if (request.status==200){
+                    let res= request.response;
+                    console.log(res);
+
+                }
+                else{
+                    console.log("err",request);
+                }
+                };
+          let obj={
+            text:'Please let me in!',
+            user:usName.value,
+            pass:usPass.value
+          };
+          request.send(JSON.stringify(obj));
+          
+        });
+
+
+
+
+
+
+
+
+      </script>

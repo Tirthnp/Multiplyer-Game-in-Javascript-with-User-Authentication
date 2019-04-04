@@ -1,0 +1,51 @@
+
+    
+    
+    
+    
+    <div class="jumbotron jumbotron-fluid">
+    <div class="container">
+       <h1 class="display-4">Forgot Your Password?</h1>
+       <p class="lead">Do not worry. We have you covered.</p>
+    </div></div>
+    <div class="form-group" id="holder">
+            <input type="text" class="form-control" placeholder="Username" required="required" id="Uname">
+    </div>
+    <div class="form-group">
+            <button class="btn btn-primary btn-block" id="subBtn" >Submit</button>
+    </div>  
+    <p class="text-center"><a href="/">Back to Sign In</a></p>
+
+    
+<script>
+    const passhere = document.getElementById("holder");
+    const uname = document.getElementById("Uname");
+    const sub = document.getElementById("subBtn");
+    sub.addEventListener("click",(evt)=>{
+        let request = new XMLHttpRequest();
+          request.open('POST','/forgot');
+          request.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+          request.responseType = "json";
+          request.onload= function(evt){
+                if (request.status==200){
+                    let res= request.response;
+                    passhere.removeChild(passhere.firstChild);
+                    const l1 = document.createElement("p");
+                    text =  res.password;
+                    l1.innerHTML = text;
+                    passhere.appendChild(l1);
+
+                }
+                else{
+                    console.log("err",request);
+                }
+                };
+          let obj={
+            text:'Please let me in!',
+            user:uname.value
+          };
+          request.send(JSON.stringify(obj));
+
+    });
+
+</script>

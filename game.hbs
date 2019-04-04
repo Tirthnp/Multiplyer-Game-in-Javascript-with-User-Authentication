@@ -1,0 +1,156 @@
+<button id="signoutBtn">Sign Out</button>
+ <canvas id='ctx' width='500' height="500" style="border:1px solid black; size:100%;"></canvas>
+
+ <script src="http://cdn.socket.io/socket.io-1.4.5.js"></script>
+ <script>
+     var canvas = document.getElementById("ctx")
+     let ctx= canvas.getContext('2d');
+     
+
+     ctx.font = '15px Arial';
+     const signout = document.getElementById("signoutBtn");
+     signout.addEventListener("click",(evt)=>{
+         let request = new XMLHttpRequest();
+         request.open("POST","/signout");
+         request.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+          request.responseType = "json";
+          request.onload= function(evt){
+                if (request.status==200){
+                    let res= request.response;
+                    console.log(res);
+                    window.location= res.location;
+                }
+                else{
+                    console.log("err",request);
+                }
+                };
+          let obj={
+            text:'SignOut'
+            
+          };
+          request.send(JSON.stringify(obj));
+
+
+     });
+     function username(){
+         let uname;
+         let request = new XMLHttpRequest();
+         request.open("POST","/getUser");
+         request.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+         request.responseType = "json";
+         request.onload= function(evt){
+                if (request.status==200){
+                    let res= request.response;
+                    console.log(res);
+                    uname= res.uname ; 
+                }
+                else{
+                    console.log("err",request);
+                }
+                };
+          let obj={
+            text:'SignOut'
+            
+          };
+          request.send(JSON.stringify(obj));
+          return uname;  
+
+     }
+     uname = username();
+     
+     var socket=io();
+     
+     socket.on('newposition',function (params) {
+         
+
+        ctx.clearRect(0,0,2000,1000);
+        
+        for(var i=0; i<params.player.length; i++)
+        {
+            ctx.fillStyle=params.player[i].color;
+            ctx.beginPath();
+            ctx.arc(params.player[i].x, params.player[i].y, params.player[i].radius, 0, 2 * Math.PI);
+            //ctx.stroke();
+            ctx.fill();
+            ctx.fillStyle='black';
+            
+            
+            ctx.fillText('HighScore:100',20,50);
+            
+        } 
+        for(var i=0; i<params.bullet.length; i++)
+        {
+            ctx.fillStyle='red';
+            ctx.fillRect(params.bullet[i].x-5,params.bullet[i].y-5,10,10);
+            ctx.fill();
+            ctx.fillStyle='black';
+        }
+        for(var i=0; i<params.enemy.length; i++)
+        {
+            //console.log('paramsenemy',params.enemy[i].height);
+            ctx.fillRect(params.enemy[i].x,params.enemy[i].y,params.enemy[i].width,params.enemy[i].height);
+            
+        }
+        for(var i=0; i<params.energy.length; i++)
+        {
+            ctx.fillStyle='yellow';
+            ctx.beginPath();
+            ctx.arc(params.energy[i].x, params.energy[i].y, params.energy[i].radius, 0, 2 * Math.PI);
+            //ctx.stroke();
+            ctx.fill();
+            ctx.fillStyle='black';
+            
+            
+        }
+        
+
+    
+
+
+     });
+     socket.on('score',function(params){
+         ctx.fillText('Score:'+params,20,30);
+     });
+     document.onkeydown = function(event){
+        if(event.keyCode == 87) //W
+            socket.emit('keyPressed',{input:'up', press:true})
+        if(event.keyCode == 65) //A
+            socket.emit('keyPressed',{input:'left', press:true})
+        if(event.keyCode == 83) //S
+            socket.emit('keyPressed',{input:'down', press:true})
+        if(event.keyCode == 68) //D
+            socket.emit('keyPressed',{input:'right', press:true})
+     };
+     document.onkeyup = function(event){
+        if(event.keyCode == 87) //W
+            socket.emit('keyPressed',{input:'up', press:false})
+        if(event.keyCode == 65) //A
+            socket.emit('keyPressed',{input:'left', press:false})
+        if(event.keyCode == 83) //S
+            socket.emit('keyPressed',{input:'down', press:false})
+        if(event.keyCode == 68) //D
+            socket.emit('keyPressed',{input:'right', press:false})
+     };
+     
+        document.onmousedown = function(event){
+        socket.emit('keyPressed',{input:'attack',press:true});
+        };
+        
+        document.onmouseup = function(event){
+        socket.emit('keyPressed',{input:'attack',press:false});
+        };
+      
+    
+
+    
+    document.onmousemove = function(event){
+        let rect = canvas.getBoundingClientRect();
+        let cx =event.clientX-rect.left;
+        let cy = event.clientY-rect.top;
+        //console.log('cx',event.clientX);
+        //console.log();
+        var angle = Math.atan2(cy,cx)/Math.PI *180;
+        socket.emit('keyPressed',{input:'mouseAngle',x:cx,y:cy});
+        
+    };
+ </script>

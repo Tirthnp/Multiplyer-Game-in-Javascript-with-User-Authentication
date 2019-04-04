@@ -1,0 +1,117 @@
+const express = require('express');
+const sqlite3 = require('sqlite3');
+const hbs = require('express-hbs');
+const bodyParser = require('body-parser');
+const app = express();
+
+
+app.engine('hbs',hbs.express4({
+    partialsDir: __dirname + '/views/partials',
+    defaultLayout: __dirname+'/views/layout/main.hbs'
+
+}));
+
+
+
+app.set('view engine','hbs');
+app.set('views',__dirname+'/views');
+let jsonParser = bodyParser.json();
+
+
+// data bases
+const db = new sqlite3.Database(__dirname+"database.db",function(err){
+    if(!err){
+        db.run(`CREATE TABLE IF NOT EXISTS users(
+            username TEXT PRIMARY KEY,
+            password TEXT
+        )`);
+        console.log("opened database");
+    }
+});
+
+
+//function to create users
+function newUser(res,stuff){
+    
+    db.run(`INSERT INTO users(username,password) VALUES(?,?)`,[stuff.user,stuff.pass]);
+    let msg={
+        text: 'New user created'
+    };
+    res.send(msg);
+
+
+}
+
+//for checking if the user is in the database 
+function checkSignIn(res,stuff){
+    db.get(`SELECT * FROM users WHERE username = ?`,[stuff.user],function (err,row){
+        if (!err){
+            if (row){
+                console.log(row);
+                if (stuff.pass == row.password){
+                    console.log("rendering the home page.....");
+                    // res.render("homepage",{
+                    //     title:"Home"
+                    // });
+                    res.redirect("/home");
+                }else{console.log("User and Pass not match");}
+            }
+            else{console.log("NO data in database");}
+
+        }
+        else{console.log("Error loading database");}
+    });
+    
+}
+
+app.use(express.static(__dirname+'/Public'));
+
+app.get('/',function(req,res){
+    console.log("request for homepage");
+    res.render('longin',{
+        title:'Welcome:'
+    });
+
+
+});
+
+
+app.post('/',jsonParser, function(req,res){
+    let stuff = req.body;
+    console.log(stuff);
+    checkSignIn(res,stuff);
+   // checkUser();//for checking if the username and password matches
+    
+});
+
+// req from clicking new to the website
+app.get('/new',jsonParser,function(req,res,next){
+    let stuff = req.body;
+    
+    res.type('.html');
+    res.render('register',{
+        title:'Registration'
+    });
+ 
+});
+
+//req from clicking forgot from the homepage
+app.get("/forgot",function(req,res){
+    res.type('.html');
+    res.render('forgot',{title:"Recovery"});
+});
+app.get("/home",function(req,res){
+    res.render("homepage",{
+        title:"Home"
+    });
+});
+app.post('/new',jsonParser,function(req,res){
+    let stuff = req.body;
+    console.log(stuff);
+    newUser(res,stuff);
+    
+    
+});
+
+const port = process.env.PORT || 8000;
+app.listen(port,()=>console.log(`Listening on port ${port}!`));
