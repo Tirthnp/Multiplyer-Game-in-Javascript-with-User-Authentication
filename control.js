@@ -139,6 +139,7 @@ const db = new sqlite3.Database(__dirname+"database.db",function(err){
 //function to create users
 function newUser(res,stuff){
     let flag =false;
+    db.serialize(()=>{  
     db.get(`INSERT INTO users(username,password) VALUES(?,?)`,[stuff.user,stuff.pass],function(err){
         if(err){
             let msg={
@@ -155,8 +156,9 @@ function newUser(res,stuff){
             res.send(JSON.stringify(msg));
         }
     
-    });
-    
+    }).get(`INSERT INTO highscore(username,highscore) VALUES(?,?)`,[stuff.user,0],function(err){} );
+});
+        
     
  }
 
@@ -546,6 +548,16 @@ Player.connect=function(socket){
     var player=Player(socket.id);
     socket.on('username',function(name){
         player.username=name.user;
+        db.get(`SELECT highscore FROM highscore WHERE username=?`,[player.username],function(err,row){
+            console.log(row);
+            player.highscore=row.highscore;
+        });
+    
+       // db.run('INSERT INTO highscore(username,highscore) VALUES(?,?)',[player.username,player.highscore],
+         //   function( err) { if (!err) {  } }
+    
+       // );
+        
         
     });
     console.log('player'+player.username);
@@ -592,7 +604,16 @@ Player.update= function(){
             player.posx=200;
             player.posy=200;
             if(player.score>player.highscore)
+            {   
                 player.highscore=player.score;
+                db.run('UPDATE highscore SET highscore=? WHERE username=?',[player.highscore,player.username],
+            function( err) {});
+                //db.get("SELECT highscore FROM highscore WHERE username=?",[player.username],function(error,row){
+                 //   d
+               // });
+
+            }
+            
             player.score=0;
             player.radius=11;
         }
@@ -602,7 +623,7 @@ Player.update= function(){
             radius:player.radius,
             color:player.color
         });
-        console.log("Player name = "+player.username+" has high score of :"+player.highscore);
+        // console.log("Player name = "+player.username+" has high score of :"+player.highscore);
     }
     return playerPack;
 }

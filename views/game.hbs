@@ -1,4 +1,9 @@
-<button id="signoutBtn" class="btn btn-danger">Sign Out</button>
+{{!-- edithere --}}
+<div style="display:flex;flex-direction:row;">
+    <button id="signoutBtn" class="btn btn-danger">Sign Out</button>
+    <div style="width:10px;" ></div>
+    <button id="editBtn" class="btn btn-danger">Edit Profile</button>
+</div>
 <div style="display:flex; flex-direction:row; ">
 <div class="card" style="width: 18rem;">
   <div style="display:flex; flex-direction:column;">
@@ -206,4 +211,30 @@
         socket.emit('keyPressed',{input:'mouseAngle',x:cx,y:cy});
         
     };
+
+    //added code
+    ////////////////////req to go to edit user page
+    const editbtn = document.getElementById("editBtn");
+    editbtn.addEventListener("click",(evt)=>{
+        console.log("herere");
+        let request = new XMLHttpRequest();
+         request.open("POST","/reqeditUser");
+         request.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+          request.responseType = "json";
+          request.onload= function(evt){
+                if (request.status==200){
+                    let res= request.response;
+                    window.location= res.location;
+                }
+                else{
+                    console.log("err",request);
+                }
+                };
+          let obj={
+            text:'SignOut'
+            
+          };
+          request.send(JSON.stringify(obj));
+
+    });
  </script>
