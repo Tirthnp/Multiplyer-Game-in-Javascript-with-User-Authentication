@@ -129,7 +129,6 @@
                     if (request.status==200){
                         let res= request.response;
                         console.log(res);
-                        //socket.emit('username',res);
                         sending=res.user+": "+sending;
                         socket.emit('chattoserver',sending);                 
                         

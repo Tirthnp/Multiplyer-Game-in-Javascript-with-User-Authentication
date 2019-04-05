@@ -459,7 +459,14 @@ app.post("/editUser",jsonParser,function(req,res){
     });
 
 });
-
+getRandomColor=function() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
 
 
 
@@ -499,7 +506,7 @@ var Player= function(id){
     self.shootingangle=0;
     self.highscore=0;
     self.radius = 11;
-    self.color='purple';
+    self.color=getRandomColor();
     self.score=0;
     self.dead=false;
     self.respawn=false;
@@ -521,10 +528,24 @@ var Player= function(id){
         }
     }
     self.shoot=function(angle){
-
-        const bul = Bullet(self,angle);
-        bul.posx=self.posx;
-        bul.posy=self.posy;
+        if(self.score % 5==0)
+        {
+            let temp=0;
+            for(let i=0; i<10 ;i++)
+            {
+                const bul = Bullet(self,temp);
+                bul.posx=self.posx;
+                bul.posy=self.posy;
+                temp=temp+360/10;
+            }
+        }
+        else
+        {
+            const bul = Bullet(self,angle);
+            bul.posx=self.posx;
+            bul.posy=self.posy;
+        }
+        
     }
     self.updateSpeed=function(){
         if(self.goDown)
@@ -651,13 +672,15 @@ var Bullet = function(parent,tangle){
     self.dead =false;
     var entity_update = self.update;
     self.update = function(){
-        if(self.time++ > 100)
+        if(self.time++ > 20)
             self.dead = true;
         entity_update();
         for(var i in Player.list){
             var p = Player.list[i];
-            if(self.getdist(p)< 32 && self.parent.id !== p.id){
+            if(self.getdist(p)+self.radius+p.radius< 0 && self.parent.id !== p.id){
                 self.dead=true;
+                p.radius=p.radius-5;
+                self.parent.score=self.parent.score+2;
             }
         }
         for(let i in Enemy.list)
@@ -704,10 +727,12 @@ var Enemy = function(){
     self.speedx = Math.floor(Math.random()* (5-3)+3);
     self.speedy = Math.floor(Math.random()* (5-3)+3);
     self.dead =false;
+    
     Enemy.list[self.id]=self;
     var entity_update = self.update;
     self.update = function(){
         entity_update();
+        
         if(self.posx+self.width>700)
         {
             self.speedx=-1*self.speedx;
@@ -765,12 +790,15 @@ let Energy= function(){
     self.id= Math.random();
     self.radius = 5;
     self.dead=false;
+    self.timer=0;
     self.posx=Math.floor(Math.random()* (695-self.radius)+self.radius);
     self.posy=Math.floor(Math.random()* (595-self.radius)+self.radius);
     var entity_update = self.update;
     Energy.list[self.id]=self;
     self.update = function(){
         entity_update();
+        if(self.timer++ > 100)
+            self.dead = true;
         for(var i in Player.list){
             var p = Player.list[i];
             if(self.getdist(p)-p.radius-self.radius < 0  ){
@@ -787,7 +815,7 @@ Energy.list={};
 Energy.update= function(){
     
     var energypack=[];
-    
+
     for (var i in Energy.list){
         var energy =Energy.list[i];
         energy.update();
@@ -831,11 +859,11 @@ io.sockets.on('connection',function(socket){
 });
 
 setInterval(function(){
-    if(Math.random()<0.01)
+    if(Math.random()<0.04)
     {
         Enemy();
     }
-    if(Math.random()<0.001)
+    if(Math.random()<0.01)
     {
         Energy();
     }
