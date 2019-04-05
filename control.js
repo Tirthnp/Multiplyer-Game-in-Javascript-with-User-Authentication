@@ -536,7 +536,7 @@ var Player= function(id){
         }
     }
     self.shoot=function(angle){
-        if(self.score % 5==0)
+        if(self.score % 5==0 && self.score!=0)
         {
             let temp=0;
             for(let i=0; i<10 ;i++)
