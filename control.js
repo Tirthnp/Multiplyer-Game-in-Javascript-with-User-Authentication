@@ -17,7 +17,6 @@ const serv= require('http').Server(app);
 
 
 app.engine('hbs',hbs.express4({
-    
     defaultLayout: __dirname+'/views/layout/main.hbs'
 
 }));
