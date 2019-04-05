@@ -4,18 +4,17 @@ const hbs = require('express-hbs');
 const bodyParser = require('body-parser');
 const cookieSession = require("cookie-session");
 let jsonParser = bodyParser.json();
-const app = express();
+const app = express(); 
+
+//defining the admin 
 const admin = {
         user: "admin",
         password: "admin",
         status:false
 
         }
-
+//using this for the socket connection from the game
 const serv= require('http').Server(app);
-
-
-
 app.engine('hbs',hbs.express4({
     defaultLayout: __dirname+'/views/layout/main.hbs'
 
@@ -35,6 +34,7 @@ const allowedPages=[
 
 //function to check the authentication
 function checkAuth(req,res,next){
+    // using req.url ==="/url" to avoid adding the pages to predefined list of allowed pages 
     if (req.url === "/signout"){ //instead of app.post we used this implementation
         console.log(req.url);
         req.session=null;
@@ -44,16 +44,7 @@ function checkAuth(req,res,next){
         res.send(JSON.stringify(msg));
     
     }   
-    // else   if (req.url ==="/getscore"){
-    //     let stuff = req.body;
-    //     db.get(`SELECT * FROM highscore WHERE username = ?`,[stuff.user],function (err,row){
-    //         if(!err){
-    //             res.send(JSON.stringify(row))
-    //         }
-
-    //     });
-
-    // }
+    //query to get highscore
     else if (req.url==="/getuserhighscore"){
         db.all(`SELECT * FROM highscore`,[],function(err,rows){
             if (!err){
@@ -61,6 +52,7 @@ function checkAuth(req,res,next){
             }
         });
     }
+    // query to get all the users
     else if (req.url === "/getallusers"){
 
             db.all(`SELECT * FROM users`,[],function (err,row){
@@ -72,6 +64,7 @@ function checkAuth(req,res,next){
             });
         
     }
+    // sending the user name  to client if requested 
     else if (req.url ==="/getUser"){
          // this for game to know the user name
             let name = req.session.user;
@@ -81,12 +74,14 @@ function checkAuth(req,res,next){
             res.send(JSON.stringify(msg));
        
     }
+    //request to user edit page
     else if (req.url==="/reqeditUser"){
         let msg={
             location:"/userpage"
         }
         res.send(JSON.stringify(msg));
     }
+    // req to admin signout, this is the req coming from the button from the admin page
     else if (req.url === "/adminsignout"){
         
             console.log("frm admin:  "+req.session);
@@ -97,16 +92,16 @@ function checkAuth(req,res,next){
             }
             req.session =null
             res.send(JSON.stringify(msg));
-        
     }
+    // only the request to predefined pages comes here if the page is not defined it displays page not found error
     else if (allowedPages.indexOf(req.url) === -1 ){
         console.log("fjjfjf"+"  "+req.url);
         res.render("notallowed",{
             title:"Page Not Found"
         });
     }
+    // req comes here if the user is defined 
     else if (req.session && req.session.auth){
-        console.log("here**");
         next();
     }
     else if (allowedPages.indexOf(req.url) !== -1 ){
@@ -115,13 +110,9 @@ function checkAuth(req,res,next){
     }
 }
 
-
-
 app.set('view engine','hbs');
 app.set('views',__dirname+'/views');
 
-
-//
 // data bases
 const db = new sqlite3.Database(__dirname+"database.db",function(err){
     if(!err){
@@ -168,7 +159,8 @@ function newUser(res,stuff){
     
  }
 
-//for checking if the user is in the database 
+//for checking if the user is in the database
+//control comes here to check if the authentication is right 
 function checkSignIn(req,res,stuff){
     db.get(`SELECT * FROM users WHERE username = ?`,[stuff.user],function (err,row){
         if (!err){
@@ -176,9 +168,7 @@ function checkSignIn(req,res,stuff){
                 console.log(row);
                 if (stuff.pass === row.password){
                     console.log("rendering the home page.....");
-                    // res.render("homepage",{
-                    //     title:"Home"
-                    // });
+                    //defining the cookie
                     req.session.auth = true;
                     req.session.user =stuff.user;
                     
@@ -208,16 +198,11 @@ function checkSignIn(req,res,stuff){
                 console.log("NO data in database");
                 
             }
-
         }
         else{console.log("Error loading database");}
     });
-    
 }
-
-//function to send error page
-
-app.use(cookieSession({
+app.use(cookieSession({ 
     name:"session",
     secret:"fooo"
 }));
@@ -225,15 +210,14 @@ app.use(express.static(__dirname+'/Public'));
 app.use(checkAuth);
 
 app.get('/',function(req,res){
-
         console.log("request for homepage");
+    // if the  admin is signed in.. the users will not be allow to acces the page
     if (!admin.status){
         console.log(req.session);
         console.log(req.session.auth); 
         if (!req.session.auth){
             res.render('longin',{
                 title:'Welcome:'});
-
         }
         else{
             res.render("adminlogged",{
@@ -247,17 +231,12 @@ app.get('/',function(req,res){
         });
     }
 });
-
-
 app.post('/',jsonParser, function(req,res){
     let stuff = req.body;
     console.log(stuff);
     
     checkSignIn(req,res,stuff);
-   // checkUser();//for checking if the username and password matches
-    
 });
-
 // req from clicking new to the website
 app.get('/new',jsonParser,function(req,res,next){
     if (admin.status){
@@ -276,9 +255,7 @@ app.get('/new',jsonParser,function(req,res,next){
                     title:"Error"
                 });
             }
-        
     }
-     
 });
 
 //req from clicking forgot from the homepage
@@ -301,6 +278,7 @@ app.get("/forgot",function(req,res){
             }
     }
 });
+//req to homepage [where the game canvas is]
 app.get("/home",function(req,res){
     if (admin.status){
         res.render("adminlogged",{
@@ -317,12 +295,10 @@ app.get("/home",function(req,res){
                 title:"Welcome"
             });
         }
-    
-       
-
     }
     
 });
+//req to admin page
 app.get("/admin",function(req,res){
     
     if(req.session.auth){
@@ -338,14 +314,14 @@ app.get("/admin",function(req,res){
     res.render("admin",{
         title:"Admin Page"
     });
-
 });
+// for adding new users
 app.post('/new',jsonParser,function(req,res){
     let stuff = req.body;
     console.log(stuff);
     newUser(res,stuff);
 });
-
+// req to forget password 
 app.post("/forgot",jsonParser,function(req,res){
     let stuff = req.body;
     db.get(`SELECT * FROM users WHERE username = ?`,[stuff.user],function (err,row){
@@ -364,7 +340,6 @@ app.post("/forgot",jsonParser,function(req,res){
                 res.send(JSON.stringify(msg));
                 
             }
-
         }
         else{
             let msg ={
@@ -373,9 +348,9 @@ app.post("/forgot",jsonParser,function(req,res){
             res.send(JSON.stringify(msg)); 
     }
     });
-    
-
 });
+//to check if the admin password and username is correct 
+// if correct send the admin page
 app.post("/admin",jsonParser, function(req,res){
     let stuff = req.body;
     if (stuff.user === admin.user && (stuff.pass === admin.password)){ 
@@ -394,21 +369,12 @@ app.post("/admin",jsonParser, function(req,res){
         res.send(JSON.stringify(msg));
     }
 });
+// req to go to admin page
 app.get("/adminpage",jsonParser,function(req,res){
-    
-    
     if (admin.status){
-      
-             
                 res.render("adminpage",{
                     title:"Admin Page",
-                   
                     });
-             
-                
-      
-      
-                  
     }
     else{
         res.render("notallowed",{
@@ -416,7 +382,7 @@ app.get("/adminpage",jsonParser,function(req,res){
         });
     }
 });
-
+// req from the adminpage to delete page
 app.post("/deleteUser",jsonParser,function(req,res){
         let stuff =req.body;
         db.run(`DELETE FROM users WHERE username=?`, [stuff.user],
@@ -442,6 +408,7 @@ app.get("/userpage",jsonParser,function(req,res){
         });
     }
 });
+// post from the user edit page 
 app.post("/editUser",jsonParser,function(req,res){
     let stuff = req.body;
     console.log("upadte pass"+stuff.password);
@@ -456,8 +423,9 @@ app.post("/editUser",jsonParser,function(req,res){
             console.log("error")
         }
     });
-
 });
+///////////////////////////game engine////////////////////////////////////
+// to generate random colors
 getRandomColor=function() {
     var letters = '0123456789ABCDEF';
     var color = '#';
@@ -467,12 +435,9 @@ getRandomColor=function() {
     return color;
   }
 
+var socketList={}; //list of all connection received by the socket
 
-
-///////////////////////////game engine////////////////////////////////////
-var socketList={};
-
-var entity = function() {
+var entity = function() { //every object on the canvas
     var self ={
         posx:250,
         posy:250,
@@ -585,20 +550,15 @@ Player.list={};
 Player.connect=function(socket){
     var player=Player(socket.id);
     socket.on('username',function(name){
-        player.username=name.user;
+        player.username=name.user; //every socket connection is given the corresponding user name
+        //query to get the highscore of the requested user
         db.get(`SELECT highscore FROM highscore WHERE username=?`,[player.username],function(err,row){
             console.log(row);
             player.highscore=row.highscore;
         });
-    
-       // db.run('INSERT INTO highscore(username,highscore) VALUES(?,?)',[player.username,player.highscore],
-         //   function( err) { if (!err) {  } }
-    
-       // );
-        
-        
     });
     console.log('player'+player.username);
+    //checks the input received from the socket for action of the player
     socket.on('keyPressed',function(state){
         if(state.input == 'up')
             player.goUp=state.press;
@@ -617,11 +577,9 @@ Player.connect=function(socket){
             let angle = Math.atan2(cy,cx)/Math.PI *180;
             player.shootingangle=angle;
         }
-        
-     
-
     });
 }
+// if user is disconnected from the socket;
 Player.disconnect=function(socket){
     delete Player.list[socket.id];
 }
@@ -645,11 +603,7 @@ Player.update= function(){
                 player.highscore=player.score;
                 db.run('UPDATE highscore SET highscore=? WHERE username=?',[player.highscore,player.username],
             function( err) {});
-                //db.get("SELECT highscore FROM highscore WHERE username=?",[player.username],function(error,row){
-                 //   d
-               // });
-
-            }
+                }
             
             player.score=0;
             player.radius=11;
@@ -664,7 +618,6 @@ Player.update= function(){
             username:player.username,
             highscore:player.highscore
         });
-        // console.log("Player name = "+player.username+" has high score of :"+player.highscore);
     }
     return playerPack;
 }
@@ -706,9 +659,7 @@ var Bullet = function(parent,tangle){
 Bullet.list={};
 
 Bullet.update= function(){
-    
     var bulletpack=[];
-    
     for (var i in Bullet.list){
         var bullet =Bullet.list[i];
         bullet.update();
@@ -846,6 +797,7 @@ Energy.update= function(){
     //console.log('pack'+energypack)
     return energypack;
 }
+// io for listenning the connection from the server
 var io= require('socket.io')(serv,{});
 io.sockets.on('connection',function(socket){
     socket.id = Math.random();
@@ -881,11 +833,7 @@ setInterval(function(){
         bullet : Bullet.update(),
         enemy : Enemy.update(),
         energy : Energy.update()
-    }
-    
-
-
-    
+    } 
     for(var i in socketList){
         var socket=socketList[i];
         socket.emit('newposition',info);
@@ -896,17 +844,8 @@ setInterval(function(){
                 socket.emit('score',{score:Player.list[i].score, highscore:Player.list[i].highscore});
             }
         }
-      
-        
     }
-   
 },1000/25);
 
-
-
-
-
-
 const port = process.env.PORT || 8000;
-// app.listen();
 serv.listen(port,()=>console.log("Listening on port ${port}!"));
