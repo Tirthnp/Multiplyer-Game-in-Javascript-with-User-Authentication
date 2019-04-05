@@ -726,6 +726,8 @@ var Enemy = function(){
     self.height = Math.floor(Math.random()* (20-3)+3);
     self.speedx = Math.floor(Math.random()* (5-3)+3);
     self.speedy = Math.floor(Math.random()* (5-3)+3);
+    self.posx=Math.floor(Math.random()* (700-self.width-0)+0);
+    self.posy=Math.floor(Math.random()* (600-self.height-0)+0);
     self.dead =false;
     
     Enemy.list[self.id]=self;
