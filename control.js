@@ -491,6 +491,12 @@ var entity = function() {
     self.getdist=function(pt){
         return Math.sqrt(Math.pow(self.posx-pt.posx,2)+Math.pow(self.posy-pt.posy,2));
     }
+    self.getdistbul=function(pt){
+        return Math.sqrt(Math.pow(self.posx-5-pt.posx,2)+Math.pow(self.posy-5-pt.posy,2));
+    }
+    self.getdistrect=function(pt){
+        return Math.sqrt(Math.pow(self.posx-5-pt.posx-(pt.width/2),2)+Math.pow(self.posy-5-pt.posy-(pt.height)/2,2));
+    }
     return self;
 }
 var Player= function(id){
@@ -666,7 +672,6 @@ var Bullet = function(parent,tangle){
     self.id= Math.random();
     self.speedx= Math.cos(tangle/180*Math.PI)*10;
     self.speedy = Math.sin(tangle/180*Math.PI)*10;
-    
     self.time=0;
     self.parent=parent;
     self.dead =false;
@@ -677,7 +682,7 @@ var Bullet = function(parent,tangle){
         entity_update();
         for(var i in Player.list){
             var p = Player.list[i];
-            if(self.getdist(p)+self.radius+p.radius< 0 && self.parent.id !== p.id){
+            if(self.getdistbul(p)<5+p.radius && self.parent.id !== p.id){
                 self.dead=true;
                 p.radius=p.radius-5;
                 self.parent.score=self.parent.score+2;
@@ -686,7 +691,7 @@ var Bullet = function(parent,tangle){
         for(let i in Enemy.list)
         {
             var e = Enemy.list[i];
-            if(self.getdist(e)-(e.width+e.height)-5<0 ){
+            if(self.getdistrect(e)<5+(e.width+e.height)/2 ){
                 self.dead=true;
                 e.dead=true;
                 self.parent.score=self.parent.score+1;
