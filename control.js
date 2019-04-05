@@ -512,6 +512,8 @@ var Player= function(id){
     self.shootingangle=0;
     self.highscore=0;
     self.radius = 11;
+    self.posx=Math.floor(Math.random()* (695-self.radius)+self.radius);
+    self.posy=Math.floor(Math.random()* (595-self.radius)+self.radius);
     self.color=getRandomColor();
     self.score=0;
     self.dead=false;
@@ -638,8 +640,7 @@ Player.update= function(){
         if(player.respawn)
         {
             player.respawn=false;
-            player.posx=200;
-            player.posy=200;
+            
             if(player.score>player.highscore)
             {   
                 player.highscore=player.score;
@@ -653,6 +654,8 @@ Player.update= function(){
             
             player.score=0;
             player.radius=11;
+            player.posx=Math.floor(Math.random()* (695-player.radius)+player.radius);
+            player.posy=Math.floor(Math.random()* (595-player.radius)+player.radius);
         }
         playerPack.push({
             x:player.posx,
