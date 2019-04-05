@@ -16,7 +16,7 @@
                       window.location= res.location;
                     }
                     else{
-                      window.alert("No user "+usName.value+" in the database");
+                      window.alert(res.msg);
                     }
                     
                 }

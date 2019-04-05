@@ -55,6 +55,13 @@ function checkAuth(req,res,next){
     //     });
 
     // }
+    else if (req.url==="/getuserhighscore"){
+        db.all(`SELECT * FROM highscore`,[],function(err,rows){
+            if (!err){
+                res.send(JSON.stringify(rows));
+            }
+        });
+    }
     else if (req.url === "/getallusers"){
 
             db.all(`SELECT * FROM users`,[],function (err,row){
@@ -179,13 +186,15 @@ function checkSignIn(req,res,stuff){
                     let obj = {
                         location:"/home",
                         text: true
+                        
                     }
                     res.send(JSON.stringify(obj));
                 }
                 else{ 
                     req.session.auth=false;
                     let obj = {
-                        text: false
+                        text: false,
+                        msg:"Password did not match"
                     }
                     res.send(JSON.stringify(obj));
                     console.log("User and Pass not match");}
@@ -193,7 +202,8 @@ function checkSignIn(req,res,stuff){
             else{
                 req.session.auth=false;
                 let obj = {
-                    text: false
+                    text: false,
+                    msg:"no user "+ stuff.user + " in the database"
                 }
                 res.send(JSON.stringify(obj));
                 console.log("NO data in database");
@@ -533,8 +543,8 @@ var Player= function(id){
     self.checkpos=function(){
         if(self.posx<self.radius)
             self.posx=0+self.radius;
-        if(self.posx>600-self.radius)
-            self.posx=600-self.radius;
+        if(self.posx>700-self.radius)
+            self.posx=700-self.radius;
         if(self.posy<self.radius)
             self.posy=0+self.radius;
         if(self.posy>600-self.radius)
@@ -621,7 +631,9 @@ Player.update= function(){
             x:player.posx,
             y:player.posy,
             radius:player.radius,
-            color:player.color
+            color:player.color,
+            username:player.username,
+            highscore:player.highscore
         });
         // console.log("Player name = "+player.username+" has high score of :"+player.highscore);
     }
@@ -696,7 +708,7 @@ var Enemy = function(){
     var entity_update = self.update;
     self.update = function(){
         entity_update();
-        if(self.posx+self.width>600)
+        if(self.posx+self.width>700)
         {
             self.speedx=-1*self.speedx;
         }
@@ -753,7 +765,7 @@ let Energy= function(){
     self.id= Math.random();
     self.radius = 5;
     self.dead=false;
-    self.posx=Math.floor(Math.random()* (595-self.radius)+self.radius);
+    self.posx=Math.floor(Math.random()* (695-self.radius)+self.radius);
     self.posy=Math.floor(Math.random()* (595-self.radius)+self.radius);
     var entity_update = self.update;
     Energy.list[self.id]=self;
@@ -813,6 +825,7 @@ io.sockets.on('connection',function(socket){
             socketList[i].emit('addchat',chat);
         }
     });
+    
     
     
 });

@@ -13,6 +13,7 @@
             <input type="text" class="form-control" name="username" placeholder="Username" required="required"
                 id="Uname">
   </div >
+  <div style="width:20px"></div>
   <button class="form-group" style="border:solid; border-radius:15px;" id="deleteBtn" >Delete</button>
   </div>
 
@@ -56,9 +57,11 @@
       });
      
      // function for loading all the user from the data base
-     function getuser(){ //this post a json req to retrive all the users from the database
+     
+      //getting the high score
+      function gethighscore(){
         let request = new XMLHttpRequest();
-        request.open("post","/getallusers");
+        request.open("post","/getuserhighscore");
          request.setRequestHeader('Content-Type','application/json;charset=UTF-8');
           request.responseType = "json";
           request.onload= function(evt){
@@ -75,7 +78,7 @@
                         
                         td1.innerText = c;
                         td2.innerText = x.username;
-                        td3.innerText = "highScore will be here"
+                        td3.innerText = x.highscore;
                         
                         c++;
                         tr.appendChild(td1);
@@ -94,9 +97,8 @@
             text:'SignOut'
           };
           request.send(JSON.stringify(obj));
-         
       }
-      let user = getuser();
+      let userHighscore= gethighscore();
       // deleteing function here
       const delBtn = document.getElementById("deleteBtn");
       delBtn.addEventListener("click",(evt)=>{
