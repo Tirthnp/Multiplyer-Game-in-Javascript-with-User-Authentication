@@ -822,6 +822,7 @@ io.sockets.on('connection',function(socket){
 setInterval(function(){
     if(Math.random()<0.04)
     {
+        if(Object.keys(Enemy.list).length < 100)
         Enemy();
     }
     if(Math.random()<0.01)
