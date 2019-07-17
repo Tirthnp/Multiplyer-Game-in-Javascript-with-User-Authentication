@@ -396,10 +396,12 @@ app.post("/deleteUser",jsonParser,function(req,res){
 });
 ////directing the request to the user page
 app.get("/userpage",jsonParser,function(req,res){
+    db.get(`SELECT * FROM highscore WHERE username = ?`,[req.session.user],function (err,row){
     if (req.session.auth){
         res.render("user",{
             title:"User Page",
-            user: req.session.user
+            user: req.session.user,
+            highscore: row.highscore
         });
     }
     else{
@@ -407,6 +409,7 @@ app.get("/userpage",jsonParser,function(req,res){
             title:"Error"
         });
     }
+})
 });
 // post from the user edit page 
 app.post("/editUser",jsonParser,function(req,res){
